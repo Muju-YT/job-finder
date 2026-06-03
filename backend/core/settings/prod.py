@@ -1,11 +1,16 @@
 from .base import *
+import os
 
 DEBUG = False
 
-# Read allowed hosts from environment variable
-ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()]
+# ---------------- ALLOWED HOSTS ----------------
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('ALLOWED_HOSTS', '').split(',')
+    if host.strip()
+]
 
-# Production Database: PostgreSQL setup
+# ---------------- DATABASE ----------------
 DB_ENGINE = os.getenv('DB_ENGINE', 'django.db.backends.postgresql')
 DB_NAME = os.getenv('DB_NAME', '')
 DB_USER = os.getenv('DB_USER', '')
@@ -25,7 +30,6 @@ if DB_NAME and DB_USER:
         }
     }
 else:
-    # Fallback to base folder SQLite if PostgreSQL credentials aren't provided
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -33,7 +37,7 @@ else:
         }
     }
 
-# Production Channel Layer: Redis
+# ---------------- CHANNEL LAYER ----------------
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -43,10 +47,15 @@ CHANNEL_LAYERS = {
     },
 }
 
-# Security Headers
-SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False') == 'True'
+# ---------------- SECURITY (Render FIX) ----------------
+SECURE_SSL_REDIRECT = False
+
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
