@@ -10,6 +10,12 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
+# IMPORTANT (Render + Vercel fix)
+ALLOWED_HOSTS += [
+    "localhost",
+    "127.0.0.1",
+]
+
 # ---------------- DATABASE ----------------
 DB_ENGINE = os.getenv('DB_ENGINE', 'django.db.backends.postgresql')
 DB_NAME = os.getenv('DB_NAME', '')
@@ -47,8 +53,29 @@ CHANNEL_LAYERS = {
     },
 }
 
-# ---------------- SECURITY (Render FIX) ----------------
-SECURE_SSL_REDIRECT = False
+# ---------------- CORS FIX (VERY IMPORTANT) ----------------
+CORS_ALLOWED_ORIGINS = [
+    origin.strip().rstrip('/')
+    for origin in os.getenv(
+        'CORS_ALLOWED_ORIGINS',
+        'http://localhost:5173,http://127.0.0.1:5173,https://job-finder-self-seven.vercel.app'
+    ).split(',')
+    if origin.strip()
+]
+
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
+
+# ---------------- MEDIA FILES FIX (IMAGES) ----------------
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# ---------------- STATIC FILES (Render) ----------------
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# ---------------- SECURITY (PRODUCTION SAFE) ----------------
+SECURE_SSL_REDIRECT = False  # Render handles HTTPS already
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
@@ -59,3 +86,6 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
+
+# ---------------- OPTIONAL (GOOD PRACTICE) ----------------
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
