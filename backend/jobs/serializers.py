@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Job
 from users.serializers import UserSerializer
+from core.helpers import get_absolute_media_url
 
 class JobSerializer(serializers.ModelSerializer):
     company_name = serializers.SerializerMethodField()
@@ -23,8 +24,8 @@ class JobSerializer(serializers.ModelSerializer):
 
     def get_company_logo(self, obj):
         if hasattr(obj.recruiter, 'recruiter_profile') and obj.recruiter.recruiter_profile.company_logo:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.recruiter.recruiter_profile.company_logo.url)
-            return obj.recruiter.recruiter_profile.company_logo.url
+            return get_absolute_media_url(
+                obj.recruiter.recruiter_profile.company_logo.url,
+                self.context.get('request')
+            )
         return None

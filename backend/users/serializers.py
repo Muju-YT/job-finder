@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import CandidateProfile, RecruiterProfile
+from core.helpers import get_absolute_media_url
 
 User = get_user_model()
 
@@ -14,18 +15,12 @@ class CandidateProfileSerializer(serializers.ModelSerializer):
 
     def get_avatar_url(self, obj):
         if obj.avatar:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.avatar.url)
-            return obj.avatar.url
+            return get_absolute_media_url(obj.avatar.url, self.context.get('request'))
         return None
 
     def get_resume_url(self, obj):
         if obj.resume:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.resume.url)
-            return obj.resume.url
+            return get_absolute_media_url(obj.resume.url, self.context.get('request'))
         return None
 
 
@@ -38,10 +33,7 @@ class RecruiterProfileSerializer(serializers.ModelSerializer):
 
     def get_company_logo_url(self, obj):
         if obj.company_logo:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.company_logo.url)
-            return obj.company_logo.url
+            return get_absolute_media_url(obj.company_logo.url, self.context.get('request'))
         return None
 
 

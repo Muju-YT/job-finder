@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Application
 from jobs.models import Job
 from django.contrib.auth import get_user_model
+from core.helpers import get_absolute_media_url
 
 User = get_user_model()
 
@@ -20,10 +21,10 @@ class CandidateMinimalSerializer(serializers.ModelSerializer):
 
     def get_avatar(self, obj):
         if hasattr(obj, 'candidate_profile') and obj.candidate_profile.avatar:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.candidate_profile.avatar.url)
-            return obj.candidate_profile.avatar.url
+            return get_absolute_media_url(
+                obj.candidate_profile.avatar.url,
+                self.context.get('request')
+            )
         return None
 
 
@@ -42,10 +43,10 @@ class JobMinimalSerializer(serializers.ModelSerializer):
 
     def get_company_logo(self, obj):
         if hasattr(obj.recruiter, 'recruiter_profile') and obj.recruiter.recruiter_profile.company_logo:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.recruiter.recruiter_profile.company_logo.url)
-            return obj.recruiter.recruiter_profile.company_logo.url
+            return get_absolute_media_url(
+                obj.recruiter.recruiter_profile.company_logo.url,
+                self.context.get('request')
+            )
         return None
 
 
@@ -64,14 +65,11 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
     def get_resume_url(self, obj):
         if obj.resume:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.resume.url)
-            return obj.resume.url
+            return get_absolute_media_url(obj.resume.url, self.context.get('request'))
         # Fall back to candidate profile resume if not uploaded directly
         if hasattr(obj.candidate, 'candidate_profile') and obj.candidate.candidate_profile.resume:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.candidate.candidate_profile.resume.url)
-            return obj.candidate.candidate_profile.resume.url
+            return get_absolute_media_url(
+                obj.candidate.candidate_profile.resume.url,
+                self.context.get('request')
+            )
         return None

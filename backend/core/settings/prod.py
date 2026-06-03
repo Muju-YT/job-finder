@@ -10,11 +10,8 @@ ALLOWED_HOSTS = [
     if host.strip()
 ]
 
-# IMPORTANT (Render + Vercel fix)
-ALLOWED_HOSTS += [
-    "localhost",
-    "127.0.0.1",
-]
+# Allow any Render deployment subdomain dynamically
+ALLOWED_HOSTS.append('.onrender.com')
 
 # ---------------- DATABASE ----------------
 DB_ENGINE = os.getenv('DB_ENGINE', 'django.db.backends.postgresql')
@@ -44,23 +41,37 @@ else:
     }
 
 # ---------------- CHANNEL LAYER ----------------
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/0')],
+REDIS_URL = os.getenv('REDIS_URL')
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                "hosts": [REDIS_URL],
+            },
         },
-    },
-}
+    }
+else:
+    # Graceful fallback to InMemoryChannelLayer if Redis is not configured
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 
 # ---------------- CORS FIX (VERY IMPORTANT) ----------------
 CORS_ALLOWED_ORIGINS = [
     origin.strip().rstrip('/')
     for origin in os.getenv(
         'CORS_ALLOWED_ORIGINS',
-        'http://localhost:5173,http://127.0.0.1:5173,https://job-finder-self-seven.vercel.app'
+        'https://job-finder-self-seven.vercel.app'
     ).split(',')
     if origin.strip()
+]
+
+# Support any Vercel deployment preview / production domain CORS requests
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = False
